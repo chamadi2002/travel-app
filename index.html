@@ -1,0 +1,730 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UT  function initGuideModal() {
+    $('#btnAddGuide').addEventListener('click', () => openGuideModal());
+    $('#guideModalClose').addEventListener('click', closeModal);
+    $('#btnCancelGuide').addEventListener('click', closeModal);
+    $('#guideForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = $('#guideForm').dataset.id;
+      const data = {
+        name: $('#guideName').value,
+        email: $('#guideEmail').value,
+        phone: $('#guidePhone').value,
+        commission: parseFloat($('#guideCommission').value),
+        assigned_packages: $('#guidePackages').value
+      };
+      if (id) {
+        await apiClient.put(`/guides/${id}`, data);
+      } else {
+        await apiClient.post('/guides', data);
+      }
+      closeModal();
+      await loadAllData();
+      renderGuidesTable();
+    });
+  }-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TravelGuide Pro — Financial ERP Dashboard</title>
+  <meta name="description"
+    content="Advanced Financial ERP dashboard for travel guide company. Manage packages, track revenue, and monitor sales performance with invoice and expense management.">
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+
+<body>
+  <!-- Sidebar -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <circle cx="16" cy="16" r="14" stroke="#fff" stroke-width="2" />
+          <path d="M10 20l6-12 6 12" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+          <circle cx="16" cy="12" r="2" fill="#fff" />
+        </svg>
+        <span>TravelGuide <strong>Pro</strong></span>
+      </div>
+      <button class="notif-bell" id="notifBell">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+          <path d="M13.73 21a2 2 0 01-3.46 0" />
+        </svg>
+        <span class="notif-badge" id="notifBadge" style="display:none">0</span>
+      </button>
+    </div>
+    <nav class="sidebar-nav">
+      <button class="nav-btn active" data-page="dashboard" id="nav-dashboard">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7" rx="1" />
+          <rect x="14" y="3" width="7" height="7" rx="1" />
+          <rect x="3" y="14" width="7" height="7" rx="1" />
+          <rect x="14" y="14" width="7" height="7" rx="1" />
+        </svg>
+        Dashboard
+      </button>
+      <button class="nav-btn" data-page="packages" id="nav-packages">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+        Packages
+      </button>
+      <button class="nav-btn" data-page="sales" id="nav-sales">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="1" x2="12" y2="23" />
+          <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+        </svg>
+        Sales
+      </button>
+      <button class="nav-btn" data-page="invoices" id="nav-invoices">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+        </svg>
+        Invoices
+      </button>
+      <button class="nav-btn" data-page="expenses" id="nav-expenses">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="1" y="3" width="15" height="13" />
+          <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+          <circle cx="5.5" cy="18.5" r="2.5" />
+          <circle cx="18.5" cy="18.5" r="2.5" />
+        </svg>
+        Expenses
+      </button>
+      <button class="nav-btn" data-page="cashflow" id="nav-cashflow">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="23 18 13.5 8.5 8.5 13.5 1 6" />
+          <polyline points="17 18 23 18 23 12" />
+        </svg>
+        Cash Flow
+      </button>
+      <button class="nav-btn" data-page="guides" id="nav-guides">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 00-3-3.87" />
+          <path d="M16 3.13a4 4 0 010 7.75" />
+        </svg>
+        Tour Guides
+      </button>
+      <button class="nav-btn" data-page="reports" id="nav-reports">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M18 20V10M12 20V4M6 20v-6" />
+        </svg>
+        Reports
+      </button>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <div class="avatar">JD</div>
+        <div>
+          <div class="user-name">Jane Doe</div>
+          <div class="user-role">Owner</div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Notification Panel -->
+  <div class="notif-panel" id="notifPanel">
+    <div class="notif-panel-header">
+      <h3>Notifications</h3>
+      <button class="notif-clear" id="notifClear">Clear All</button>
+    </div>
+    <div class="notif-list" id="notifList">
+      <div class="notif-empty">No notifications</div>
+    </div>
+  </div>
+
+  <!-- Mobile Header -->
+  <header class="mobile-header" id="mobileHeader">
+    <button class="menu-toggle" id="menuToggle" aria-label="Toggle menu">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="3" y1="6" x2="21" y2="6" />
+        <line x1="3" y1="12" x2="21" y2="12" />
+        <line x1="3" y1="18" x2="21" y2="18" />
+      </svg>
+    </button>
+    <span class="mobile-title">TravelGuide Pro</span>
+  </header>
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Main Content -->
+  <main class="main-content" id="mainContent">
+
+    <!-- Global Filter Bar -->
+    <div class="global-filter-bar">
+      <div class="filter-group">
+        <label>Date Range</label>
+        <select id="globalDateRange">
+          <option value="all">All Time</option>
+          <option value="7">Last 7 Days</option>
+          <option value="30" selected>Last 30 Days</option>
+          <option value="90">Last 90 Days</option>
+          <option value="365">Last Year</option>
+          <option value="custom">Custom Range</option>
+        </select>
+      </div>
+      <div class="filter-group" id="customDateGroup" style="display:none">
+        <label>From</label>
+        <input type="date" id="globalDateFrom">
+      </div>
+      <div class="filter-group" id="customDateGroupTo" style="display:none">
+        <label>To</label>
+        <input type="date" id="globalDateTo">
+      </div>
+      <div class="filter-group" id="packageFilterGroup">
+        <label>Package</label>
+        <select id="globalPackageFilter">
+          <option value="">All Packages</option>
+        </select>
+      </div>
+      <button class="btn-filter-apply" id="btnApplyGlobalFilter">Apply Filters</button>
+      <button class="btn-filter-reset" id="btnResetGlobalFilter">Reset</button>
+    </div>
+
+    <!-- DASHBOARD PAGE -->
+    <section class="page active" id="page-dashboard">
+      <div class="page-header">
+        <h1>Financial Dashboard</h1>
+        <p class="subtitle">Overview of your travel business performance</p>
+      </div>
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card">
+          <div class="stat-icon revenue-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23" />
+              <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+            </svg></div>
+          <div class="stat-info"><span class="stat-label">Total Revenue</span><span class="stat-value"
+              id="statRevenue">$0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon expense-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <rect x="1" y="3" width="15" height="13" />
+              <polygon points="16 8 20 8 23 11 23 16 16 16 16 8" />
+              <circle cx="5.5" cy="18.5" r="2.5" />
+              <circle cx="18.5" cy="18.5" r="2.5" />
+            </svg></div>
+          <div class="stat-info"><span class="stat-label">Total Expenses</span><span class="stat-value"
+              id="statExpenses">$0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon profit-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M12 1v22" />
+              <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+            </svg></div>
+          <div class="stat-info"><span class="stat-label">Net Profit</span><span class="stat-value"
+              id="statProfit">$0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon outstanding-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg></div>
+          <div class="stat-info"><span class="stat-label">Outstanding</span><span class="stat-value"
+              id="statOutstanding">$0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon sold-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12" />
+            </svg></div>
+          <div class="stat-info"><span class="stat-label">Packages Sold</span><span class="stat-value"
+              id="statSold">0</span></div>
+        </div>
+        <div class="stat-card border-none">
+          <div class="stat-icon balance-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <line x1="2" y1="10" x2="22" y2="10" />
+            </svg></div>
+          <div class="stat-info"><span class="stat-label">Cash Balance</span><span class="stat-value"
+              id="statBalance">$0</span></div>
+        </div>
+      </div>
+
+      <div class="dashboard-charts-grid">
+        <div class="chart-section card">
+          <div class="chart-header">
+            <h2>Revenue Overview</h2>
+            <div class="chart-filters" id="chartFilters">
+              <button class="filter-btn" data-months="3">3M</button>
+              <button class="filter-btn active" data-months="6">6M</button>
+              <button class="filter-btn" data-months="12">12M</button>
+            </div>
+          </div>
+          <div class="chart-container"><canvas id="revenueChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h2>Revenue by Package</h2>
+          <div class="chart-container small"><canvas id="revenueByPackageChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h2>Revenue by Destination</h2>
+          <div class="chart-container small"><canvas id="revenueByDestChart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="insights-card card">
+        <h2>Financial Insights</h2>
+        <div id="travelInsights" class="insights-grid"></div>
+      </div>
+
+      <div class="card">
+        <h2>Package Performance</h2>
+        <p class="subtitle">Ranked by number of sales</p>
+        <div id="performanceList" class="performance-list"></div>
+      </div>
+    </section>
+
+    <!-- PACKAGES PAGE -->
+    <section class="page" id="page-packages">
+      <div class="page-header">
+        <h1>Travel Packages</h1><button class="btn-primary" id="btnAddPackage">+ Add Package</button>
+      </div>
+      <div class="filter-bar card" id="packageFilters">
+        <div class="filter-group"><label>Destination</label><select id="filterDestination">
+            <option value="">All</option>
+          </select></div>
+        <div class="filter-group"><label>Status</label><select id="filterStatus">
+            <option value="">All</option>
+            <option value="available">Available</option>
+            <option value="sold out">Sold Out</option>
+          </select></div>
+        <div class="filter-group"><label>Min Price ($)</label><input type="number" id="filterMinPrice" min="0"
+            placeholder="0"></div>
+        <div class="filter-group"><label>Max Price ($)</label><input type="number" id="filterMaxPrice" min="0"
+            placeholder="Any"></div>
+      </div>
+      <div class="card table-wrapper">
+        <table class="data-table" id="packagesTable">
+          <thead>
+            <tr>
+              <th>Package Name</th>
+              <th>Destination</th>
+              <th>Price (USD)</th>
+              <th>Duration</th>
+              <th>Availability</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="packagesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SALES PAGE -->
+    <section class="page" id="page-sales">
+      <div class="page-header">
+        <h1>Sales History</h1>
+        <div class="header-actions"><button class="btn-primary" id="btnAddSale">+ Log Sale</button><button
+            class="btn-secondary" id="btnExportCSV">⬇ Export CSV</button></div>
+      </div>
+      <div class="card table-wrapper">
+        <table class="data-table" id="salesTable">
+          <thead>
+            <tr>
+              <th>Sale ID</th>
+              <th>Customer</th>
+              <th>Package</th>
+              <th>Date</th>
+              <th>Amount</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="salesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- INVOICES PAGE -->
+    <section class="page" id="page-invoices">
+      <div class="page-header">
+        <h1>Invoices</h1>
+        <button class="btn-primary" id="btnCreateInvoice">+ Create Invoice</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Total Invoices</span><span class="stat-value"
+              id="statTotalInvoices">0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Paid</span><span class="stat-value text-success"
+              id="statPaidInvoices">0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Unpaid</span><span class="stat-value text-warning"
+              id="statUnpaidInvoices">0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Overdue</span><span class="stat-value text-danger"
+              id="statOverdueInvoices">0</span></div>
+        </div>
+      </div>
+      <div class="card table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Sale ID</th>
+              <th>Customer</th>
+              <th>Package</th>
+              <th>Amount</th>
+              <th>Issue Date</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="invoicesBody"></tbody>
+        </table>
+      </div>
+      <div class="card" style="margin-top:24px">
+        <h2>Accounts Receivable</h2>
+        <div id="arSummary" class="ar-summary-bar"></div>
+        <div class="table-wrapper mini">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Sale ID</th>
+                <th>Amount</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="arBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- EXPENSES PAGE -->
+    <section class="page" id="page-expenses">
+      <div class="page-header">
+        <h1>Expense Management</h1>
+        <button class="btn-primary" id="btnAddExpense">+ Add Expense</button>
+      </div>
+      <div class="stats-grid" id="expenseSummaryGrid">
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Transport</span><span class="stat-value"
+              id="statTransport">$0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Hotels</span><span class="stat-value"
+              id="statHotels">$0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Salaries</span><span class="stat-value"
+              id="statSalaries">$0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Other</span><span class="stat-value"
+              id="statOtherExp">$0</span></div>
+        </div>
+      </div>
+      <div class="dashboard-grid" style="margin-top:24px">
+        <div class="card">
+          <h2>Expense Breakdown</h2>
+          <div class="chart-container small"><canvas id="expenseBreakdownChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h2>Monthly Expense Trend</h2>
+          <div class="chart-container small"><canvas id="monthlyExpenseChart"></canvas></div>
+        </div>
+      </div>
+      <div class="card table-wrapper" style="margin-top:24px">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Category</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Notes</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="expensesBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CASH FLOW PAGE -->
+    <section class="page" id="page-cashflow">
+      <div class="page-header">
+        <h1>Cash Flow</h1>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Total Inflow</span><span class="stat-value"
+              id="statInflow">$0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Total Outflow</span><span class="stat-value"
+              id="statOutflow">$0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Net Balance</span><span class="stat-value"
+              id="statNetBalance">$0</span></div>
+        </div>
+      </div>
+      <div class="card chart-section">
+        <h2>Monthly Cash Flow</h2>
+        <div class="chart-container"><canvas id="cashFlowChart"></canvas></div>
+      </div>
+      <div class="card table-wrapper">
+        <h2>Transaction History</h2>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Description</th>
+              <th>Amount</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+          <tbody id="cashFlowBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- GUIDES PAGE -->
+    <section class="page" id="page-guides">
+      <div class="page-header">
+        <h1>Tour Guides</h1>
+        <button class="btn-primary" id="btnAddGuide">+ Add Guide</button>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Total Guides</span><span class="stat-value"
+              id="statTotalGuides">0</span></div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-info"><span class="stat-label">Avg. Commission</span><span class="stat-value"
+              id="statAvgCommission">0%</span></div>
+        </div>
+      </div>
+      <div class="card table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Guide Name</th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Commission</th>
+              <th>Assigned</th>
+              <th>Earnings</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="guidesBody"></tbody>
+        </table>
+      </div>
+      <div class="dashboard-grid" style="margin-top:24px">
+        <div class="card">
+          <h2>Guide Earnings</h2>
+          <div class="chart-container small"><canvas id="guideEarningsChart"></canvas></div>
+        </div>
+        <div class="card">
+          <h2>Tours Led</h2>
+          <div class="chart-container small"><canvas id="guideToursChart"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- REPORTS PAGE -->
+    <section class="page" id="page-reports">
+      <div class="page-header">
+        <h1>Financial Reports</h1>
+      </div>
+      <div class="tab-header">
+        <button class="report-tab active" data-report="pnl">Profit & Loss</button>
+        <button class="report-tab" data-report="expenses">Expense Report</button>
+        <button class="report-tab" data-report="invoices">Invoice Aging</button>
+        <button class="report-tab" data-report="monthly">Monthly Summary</button>
+      </div>
+      <div class="tab-content">
+        <div id="report-pnl" class="report-section active">
+          <div class="report-header">
+            <h3>Profit & Loss Statement</h3>
+            <button class="btn-secondary btn-sm" id="btnExportPnl">Export CSV</button>
+          </div>
+          <div id="pnlContent" class="report-content"></div>
+        </div>
+        <div id="report-expenses" class="report-section">
+          <div class="report-header">
+            <h3>Expense Breakdown</h3>
+            <button class="btn-secondary btn-sm" id="btnExportExpenseReport">Export CSV</button>
+          </div>
+          <div id="expenseReportContent" class="report-content"></div>
+        </div>
+        <div id="report-invoices" class="report-section">
+          <div class="report-header">
+            <h3>Invoice Aging Report</h3>
+            <button class="btn-secondary btn-sm" id="btnExportInvoiceReport">Export CSV</button>
+          </div>
+          <div id="invoiceReportContent" class="report-content"></div>
+        </div>
+        <div id="report-monthly" class="report-section">
+          <div class="report-header">
+            <h3>Monthly Summary</h3>
+            <button class="btn-secondary btn-sm" id="btnExportMonthly">Export CSV</button>
+          </div>
+          <div id="monthlyReportContent" class="report-content"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modals -->
+  <div class="modal-overlay" id="modalOverlay">
+    <!-- Package Modal -->
+    <div class="modal" id="packageModal" style="display:none">
+      <div class="modal-header">
+        <h2 id="modalTitle">Add Package</h2><button class="modal-close" id="modalClose">&times;</button>
+      </div>
+      <form id="packageForm" class="modal-form">
+        <input type="hidden" id="pkgId">
+        <div class="form-group"><label>Package Name</label><input type="text" id="pkgName" required></div>
+        <div class="form-row">
+          <div class="form-group"><label>Destination</label><input type="text" id="pkgDest" required></div>
+          <div class="form-group"><label>Price (USD)</label><input type="number" id="pkgPrice" min="0" step="0.01"
+              required></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Duration (days)</label><input type="number" id="pkgDuration" min="1" required>
+          </div>
+          <div class="form-group"><label>Availability (slots)</label><input type="number" id="pkgSlots" min="0"
+              required></div>
+        </div>
+        <div class="form-group"><label>Status</label><select id="pkgStatus">
+            <option value="available">Available</option>
+            <option value="sold out">Sold Out</option>
+          </select></div>
+        <div class="form-actions"><button type="button" class="btn-secondary" id="btnCancelPkg">Cancel</button><button
+            type="submit" class="btn-primary">Save Package</button></div>
+      </form>
+    </div>
+
+    <!-- Sale Modal -->
+    <div class="modal" id="saleModal" style="display:none">
+      <div class="modal-header">
+        <h2>Log New Sale</h2><button class="modal-close" id="saleModalClose">&times;</button>
+      </div>
+      <form id="saleForm" class="modal-form">
+        <div class="form-group"><label>Package</label><select id="salePackage" required></select></div>
+        <div class="form-group"><label>Buyer Name</label><input type="text" id="saleBuyer" required></div>
+        <div class="form-row">
+          <div class="form-group"><label>Date Sold</label><input type="date" id="saleDate" required></div>
+          <div class="form-group"><label>Price Paid (USD)</label><input type="number" id="salePrice" min="0" step="0.01"
+              required></div>
+        </div>
+
+        <div class="form-actions"><button type="button" class="btn-secondary" id="btnCancelSale">Cancel</button><button
+            type="submit" class="btn-primary">Log Sale</button></div>
+      </form>
+    </div>
+
+    <!-- Invoice Modal -->
+    <div class="modal" id="invoiceModal" style="display: none;">
+      <div class="modal-header">
+        <h2>Create Invoice</h2>
+        <button class="modal-close" id="invoiceModalClose">&times;</button>
+      </div>
+      <form class="modal-form" id="invoiceForm">
+        <div class="form-group">
+          <label>Customer</label>
+          <input type="text" id="invoiceCustomer" placeholder="Customer name" required>
+        </div>
+        <div class="form-group">
+          <label>Package Name</label>
+          <input type="text" id="invoicePackage" placeholder="Package name" required>
+        </div>
+        <div class="form-group">
+          <label>Amount ($)</label>
+          <input type="number" id="invoiceAmount" placeholder="0.00" step="0.01" required>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Issue Date</label>
+            <input type="date" id="invoiceIssueDate" required>
+          </div>
+          <div class="form-group">
+            <label>Due Date</label>
+            <input type="date" id="invoiceDueDate" required>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" id="btnCancelInvoice">Cancel</button>
+          <button type="submit" class="btn-primary">Create Invoice</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Expense Modal -->
+    <div class="modal" id="expenseModal" style="display:none">
+      <div class="modal-header">
+        <h2 id="expenseModalTitle">Add Expense</h2><button class="modal-close" id="expenseModalClose">&times;</button>
+      </div>
+      <form id="expenseForm" class="modal-form">
+        <input type="hidden" id="expId">
+        <div class="form-group"><label>Category</label><select id="expCategory" required>
+            <option value="transport">Transport</option>
+            <option value="hotel">Hotel</option>
+            <option value="salary">Salaries</option>
+            <option value="marketing">Marketing</option>
+            <option value="equipment">Equipment</option>
+            <option value="other">Other</option>
+          </select></div>
+        <div class="form-group"><label>Description</label><input type="text" id="expDescription" required></div>
+        <div class="form-row">
+          <div class="form-group"><label>Amount (USD)</label><input type="number" id="expAmount" min="0" step="0.01"
+              required></div>
+          <div class="form-group"><label>Date</label><input type="date" id="expDate" required></div>
+        </div>
+        <div class="form-group"><label>Notes</label><textarea id="expNotes" rows="2"></textarea></div>
+        <div class="form-actions"><button type="button" class="btn-secondary" id="btnCancelExp">Cancel</button><button
+            type="submit" class="btn-primary">Save Expense</button></div>
+      </form>
+    </div>
+
+
+    <!-- Guide Modal -->
+    <div class="modal" id="guideModal" style="display:none">
+      <div class="modal-header">
+        <h2>Add Tour Guide</h2><button class="modal-close" id="guideModalClose">&times;</button>
+      </div>
+      <form id="guideForm" class="modal-form">
+        <div class="form-group"><label>Name</label><input type="text" id="guideName" placeholder="Guide name" required>
+        </div>
+        <div class="form-group"><label>Email</label><input type="email" id="guideEmail" placeholder="email@example.com">
+        </div>
+        <div class="form-group"><label>Phone</label><input type="tel" id="guidePhone" placeholder="+1-555-0000"></div>
+        <div class="form-group"><label>Commission (%)</label><input type="number" id="guideCommission" min="0" max="100"
+            step="0.1" placeholder="10" required></div>
+        <div class="form-group"><label>Assigned Packages (comma-separated IDs)</label><input type="text"
+            id="guidePackages" placeholder="1,2,3"></div>
+        <div class="form-actions">
+          <button type="button" class="btn-secondary" id="btnCancelGuide">Cancel</button>
+          <button type="submit" class="btn-primary">Save Guide</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="api-client.js"></script>
+  <script src="app.js"></script>
+
+</body>
+
+</html>
