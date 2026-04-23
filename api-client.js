@@ -1,4 +1,4 @@
-const API_BASE = 'http://localhost:5000/api';
+const API_BASE = 'https://travel-app-production-8d83.up.railway.app/api';
 
 const apiClient = {
     async get(endpoint) {
