@@ -15,30 +15,32 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-    const { date, category, description, amount, notes } = req.body;
+    const { date, category, description, amount, notes, package_id } = req.body;
     try {
         const conn = await pool.getConnection();
+        const pkgId = package_id ? parseInt(package_id) : null;
         const [result] = await conn.query(
-            'INSERT INTO expenses (date, category, description, amount, notes) VALUES (?, ?, ?, ?, ?)',
-            [date, category, description, amount, notes]
+            'INSERT INTO expenses (date, category, description, amount, notes, package_id) VALUES (?, ?, ?, ?, ?, ?)',
+            [date, category, description, amount, notes, pkgId]
         );
         conn.release();
-        res.json({ id: result.insertId, ...req.body });
+        res.json({ id: result.insertId, date, category, description, amount, notes, package_id: pkgId });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
 });
 
 router.put('/:id', async (req, res) => {
-    const { date, category, description, amount, notes } = req.body;
+    const { date, category, description, amount, notes, package_id } = req.body;
     try {
         const conn = await pool.getConnection();
+        const pkgId = package_id ? parseInt(package_id) : null;
         await conn.query(
-            'UPDATE expenses SET date=?, category=?, description=?, amount=?, notes=? WHERE id=?',
-            [date, category, description, amount, notes, req.params.id]
+            'UPDATE expenses SET date=?, category=?, description=?, amount=?, notes=?, package_id=? WHERE id=?',
+            [date, category, description, amount, notes || null, pkgId, req.params.id]
         );
         conn.release();
-        res.json({ id: req.params.id, ...req.body });
+        res.json({ id: req.params.id, date, category, description, amount, notes, package_id: pkgId });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
